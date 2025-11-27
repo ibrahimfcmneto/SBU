@@ -273,3 +273,35 @@ app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
     console.log('Acesse http://localhost:3000 no seu navegador.');
 });
+
+// Rota exclusiva para o Bibliotecário verificar pontos
+app.post('/biblio-verificar-pontos', (req, res) => {
+    const ra_aluno = req.body.nome;
+
+    const sql = "SELECT nome, pontos FROM Alunos WHERE ra = ?";
+
+    db.query(sql, [ra_aluno], (err, results) => {
+        if (err) return res.send('Erro ao buscar pontos.');
+        
+        if (results.length === 0) {
+            // Nota: O link de voltar aqui aponta para a pasta do bibliotecário
+            return res.send('<h1>RA não encontrado.</h1><a href="/biblio/pontuacao.html">Voltar</a>');
+        }
+
+        const aluno = results[0];
+        
+        let nivel = "Leitor Iniciante 🥉";
+        if (aluno.pontos > 50) nivel = "Leitor Prata 🥈";
+        if (aluno.pontos > 100) nivel = "Leitor Ouro 🥇";
+
+        res.send(`
+            <div style="text-align:center; font-family:sans-serif; padding:50px; background-color:#fff3cd;">
+                <h1>Pontuação do Aluno: ${aluno.nome}</h1>
+                <h2>Pontos Atuais: <strong>${aluno.pontos}</strong></h2>
+                <h3>Nível: ${nivel}</h3>
+                <br>
+                <a href="/biblio/pontuacao.html">Voltar</a>
+            </div>
+        `);
+    });
+});
